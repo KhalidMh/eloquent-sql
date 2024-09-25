@@ -1,0 +1,31 @@
+{
+    "name": "khalidmh/eloquent-sql",
+    "description": "A Laravel package for generating SQL insert statements from Eloquent model records.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Khalid Marhoum",
+            "email": "khalid.marhoum97@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "KhalidMh\\EloquentSql\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "KhalidMh\\EloquentSql\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.2.5 || ^8.0.2",
+        "illuminate/support": "^7.0|^8.0|^9.0|^10.0|^11.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.3"
+    }
+}
