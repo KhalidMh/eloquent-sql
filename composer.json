@@ -22,10 +22,15 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^7.2.5 || ^8.0.2",
-        "illuminate/support": "^7.0|^8.0|^9.0|^10.0|^11.0"
+        "php": "^8.0.2",
+        "illuminate/support": "^9.0|^10.0|^11.0", 
+        "illuminate/database": "^9.0|^10.0|^11.0"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^11.3"
+    "extra": {
+        "laravel": {
+            "providers": [
+                "KhalidMh\\EloquentSql\\EloquentSQLServiceProvider"
+            ]
+        }
     }
 }
