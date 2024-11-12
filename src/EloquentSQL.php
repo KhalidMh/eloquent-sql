@@ -82,7 +82,7 @@ class EloquentSQL
      */
     private function buildQuery(string $table, array $columns, array $values): string
     {
-        $columns = implode(', ', $columns);
+        $columns = $this->formatColumns($columns);
         $values = $this->formatValues($values);
 
         return "INSERT INTO `$table` ($columns) VALUES ($values);";
@@ -111,6 +111,23 @@ class EloquentSQL
 
             return $value;
         })->implode(', ');
+    }
+
+    /**
+     * Formats an array of column names into a string suitable for SQL queries.
+     *
+     * This method takes an array of column names and converts it into a single string
+     * where each column name is enclosed in backticks and separated by commas.
+     *
+     * @param array $columns An array of column names to be formatted.
+     * @return string A formatted string of column names for SQL queries.
+     */
+    private function formatColumns(array $columns): string
+    {
+        $columns = implode(', ', $columns);
+        $columns = "`" . str_replace(", ", "`, `", $columns) . "`";
+
+        return $columns;
     }
 
     /**
