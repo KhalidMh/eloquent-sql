@@ -43,7 +43,7 @@
         }
     },
     "require-dev": {
-        "pestphp/pest": "^3.5",
+        "pestphp/pest": "^1.23|| ^2.36 || ^3.5",
         "orchestra/testbench": "^7.0|^8.0|^9.5"
     },
     "config": {
