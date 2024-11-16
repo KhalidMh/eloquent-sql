@@ -1,0 +1,72 @@
+# Defines the name of the workflow that appears in GitHub Actions UI
+name: run-tests
+
+# Specifies when the workflow should run
+# Triggers on push events that modify PHP files, workflow file, PHPUnit config, or Composer files
+on:
+  push:
+    paths:
+      - '**.php'
+      - '.github/workflows/run-tests.yml'
+      - 'phpunit.xml.dist'
+      - 'composer.json'
+      - 'composer.lock'
+
+# Defines a job named "test"
+# Runs on operating systems defined in the matrix
+# Sets a 5-minute timeout
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: true
+      # Defines test matrix combinations:
+      # Operating systems: Ubuntu and Windows
+      # PHP versions: 8.3, 8.2 and 8.1
+      # Laravel versions: 11.x, 10.x and 9.x
+      # Dependency versions: minimum and latest stable
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        php: [8.0, 8.1, 8.2]
+        laravel: [11.*, 10.*, 9.*]
+        stability: [prefer-lowest, prefer-stable]
+        include:
+          - laravel: 11.*
+            testbench: 9.*
+            carbon: ^2.63
+          - laravel: 10.*
+            testbench: 8.*
+            carbon: ^2.63
+          - laravel: 9.*
+            testbench: 7.*
+            carbon: ^2.63
+
+    name: PHP-${{ matrix.php }} - Laravel-${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "nesbot/carbon:${{ matrix.os == 'windows-latest' && '^^^' || '' }}${{ matrix.carbon }}" --no-interaction --no-update
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+
+      - name: List Installed Dependencies
+        run: composer show -D
+
+      - name: Execute tests
+        run: vendor/bin/pest --ci
