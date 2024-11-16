@@ -2,23 +2,37 @@
 
 namespace KhalidMh\EloquentSql;
 
-use InvalidArgumentException;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class EloquentSQL
 {
-    private string $table;
-    private array $columns = ['*'];
-    private array $originalAttributes = [];
+    /**
+     * @var string The name of the database table associated with the Eloquent model.
+     */
+    private readonly string $table;
 
     /**
-     * Create a new instance of the EloquentSQL class.
+     * @var array $columns
      *
-     * This method initializes a new instance of the EloquentSQL class with the provided Eloquent model.
+     * This property holds the columns to be selected in the SQL query.
+     * By default, it selects all columns ('*').
+     */
+    private array $columns = ['*'];
+    /**
+     * @var array $originalAttributes
      *
-     * @param Model $model The Eloquent model instance.
+     * This property holds the original attributes of the Eloquent model.
+     * It is used to keep track of the initial state of the model's attributes
+     * before any changes are made.
+     */
+    private readonly array $originalAttributes;
+
+    /**
+     * Set the model instance and initialize the EloquentSQL instance with the model's attributes and table.
      *
-     * @return self A new instance of the EloquentSQL class.
+     * @param Model $model The Eloquent model instance to set.
+     * @return self Returns an instance of the EloquentSQL class.
      */
     public static function setModel(Model $model): self
     {
@@ -30,30 +44,31 @@ class EloquentSQL
     }
 
     /**
-     * Generates an SQL insert query string for the model.
+     * Converts the current state of the object to a SQL query string.
      *
-     * @return string The generated SQL insert query string.
+     * This method builds a SQL query string using the table name, attribute names,
+     * and attribute values of the current object.
+     *
+     * @return string The generated SQL query string.
      */
     public function toQuery(): string
     {
         return $this->buildQuery(
             table: $this->table,
-            columns: $this->getAttributesNames(),
+            names: $this->getAttributesNames(),
             values: $this->getAttributesValues()
         );
     }
 
     /**
-     * Retrieve attributes names that should be in the query.
+     * Retrieve the names of the model's attributes.
      *
-     * @return array An array of attributes names.
+     * @return array The names of the attributes.
      */
-    public function getAttributesNames(): array
+    private function getAttributesNames(): array
     {
-        $attributes = array_keys($this->originalAttributes);
-
         if ($this->columns[0] === '*') {
-            return $attributes;
+            return array_keys($this->originalAttributes);
         }
 
         return $this->columns;
@@ -64,39 +79,65 @@ class EloquentSQL
      *
      * @return array An array of column values.
      */
-    public function getAttributesValues(): array
+    private function getAttributesValues(): array
     {
-        return collect($this->originalAttributes)
-            ->filter(fn ($value, $key) => in_array($key, $this->getAttributesNames()))
-            ->toArray();
+        $filtred_values = array_filter(
+            callback : fn ($value, $name) => in_array($name, $this->getAttributesNames()),
+            array : $this->originalAttributes,
+            mode: ARRAY_FILTER_USE_BOTH
+        );
+
+        return array_values($filtred_values);
     }
 
     /**
-     * Generate the SQL query.
+     * Builds an SQL INSERT query string.
      *
-     * @param string $table The table name.
-     * @param array $columns The columns to include in the query.
-     * @param array $values The values to insert into the table.
+     * This method constructs an SQL query for inserting data into a specified table.
+     * It formats the column names and values before embedding them into the query string.
      *
-     * @return string The generated SQL query.
+     * @param string $table The name of the table into which data will be inserted.
+     * @param array $names An array of column names to be included in the query.
+     * @param array $values An array of values corresponding to the column names.
+     * @return string The constructed SQL INSERT query string.
      */
-    private function buildQuery(string $table, array $columns, array $values): string
+    private function buildQuery(string $table, array $names, array $values): string
     {
-        $columns = $this->formatColumns($columns);
+        $names = $this->formatNames($names);
         $values = $this->formatValues($values);
 
-        return "INSERT INTO `$table` ($columns) VALUES ($values);";
+        return "INSERT INTO `$table` ($names) VALUES ($values);";
     }
 
     /**
-     * Format columns values to be inserted to the database.
+     * Formats an array of attributes names into a comma-separated string with each name wrapped in backticks.
+     *
+     * @param array $columns An array of column names to be formatted.
+     * @return string A string of column names separated by commas and wrapped in backticks.
+     */
+    private function formatNames(array $names): string
+    {
+        $names_string = implode(', ', $names);
+
+        return "`" . str_replace(", ", "`, `", $names_string) . "`";
+    }
+
+    /**
+     * Format an array of values for SQL queries.
+     *
+     * This method takes an array of values and formats them into a string
+     * suitable for SQL queries. It handles different types of values:
+     * - NULL values are converted to the string 'NULL'.
+     * - String values are escaped and enclosed in double quotes.
+     * - DateTime objects are formatted to 'Y-m-d H:i:s'.
+     * - Other values are returned as-is.
      *
      * @param array $values The array of values to format.
      * @return string The formatted string of values.
      */
     private function formatValues(array $values): string
     {
-        return collect($values)->map(function ($value) {
+        return implode(', ', array_map(function ($value) {
             if (is_null($value)) {
                 return 'NULL';
             }
@@ -105,56 +146,46 @@ class EloquentSQL
                 return '"' . addslashes($value) . '"';
             }
 
-            if ($value instanceof \DateTime) {
+            if ($value instanceof Carbon) {
                 return $value->format('Y-m-d H:i:s');
             }
 
             return $value;
-        })->implode(', ');
+        }, $values));
     }
 
     /**
-     * Formats an array of column names into a string suitable for SQL queries.
+     * Specify the columns to include in the query.
      *
-     * This method takes an array of column names and converts it into a single string
-     * where each column name is enclosed in backticks and separated by commas.
+     * This method allows you to specify an array of column names that should be included in the query.
      *
-     * @param array $columns An array of column names to be formatted.
-     * @return string A formatted string of column names for SQL queries.
-     */
-    private function formatColumns(array $columns): string
-    {
-        $columns = implode(', ', $columns);
-        $columns = "`" . str_replace(", ", "`, `", $columns) . "`";
-
-        return $columns;
-    }
-
-    /**
-     * @param array $columns
+     * @param array $columns An array of column names to include in the query.
      * @return $this
-     *
-     * Specify the columns that you want to include in the query.
      */
     public function only(array $columns): self
     {
-        $this->columns = $columns;
+        if (!empty($columns)) {
+            $this->columns = $columns;
+        }
 
         return $this;
     }
 
     /**
-     * @param array $columns
-     * @return $this
+     * Exclude specific columns from the query.
      *
-     * Specify the columns that you want to exclude from the query.
+     * This method allows you to specify an array of column names that should be excluded from the query.
+     *
+     * @param array $excluded An array of column names to exclude from the query.
+     * @return $this
      */
     public function except(array $excluded): self
     {
-        $original = array_keys($this->originalAttributes);
-        $diff = array_diff($original, $excluded);
-
-        $this->columns = array_values($diff);
+        if (!empty($excluded)) {
+            $original = array_keys($this->originalAttributes);
+            $diff = array_diff($original, $excluded);
+            $this->columns = array_values($diff);
+        }
 
         return $this;
     }
