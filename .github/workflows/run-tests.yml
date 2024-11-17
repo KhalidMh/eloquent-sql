@@ -1,20 +1,27 @@
 name: run-tests
 
-on: [push, pull_request]
+on: 
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         php: [8.2]
         laravel: [11.*]
         stability: [prefer-stable]
+        include:
+            - laravel: 11.*
+              testbench: ^9.0
 
-    name: ${{ matrix.os }} - PHP ${{ matrix.php }} ${{ matrix.stability }}
+    name: PHP${{ matrix.php }} - LARAVEL${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -34,6 +41,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: Execute tests
