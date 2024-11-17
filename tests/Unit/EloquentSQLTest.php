@@ -1,8 +1,8 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use KhalidMh\EloquentSQL\EloquentSQL;
 use KhalidMh\EloquentSQL\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 

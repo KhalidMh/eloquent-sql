@@ -13,14 +13,14 @@ class EloquentSQL
     private readonly string $table;
 
     /**
-     * @var array $columns
+     * @var array
      *
      * This property holds the columns to be selected in the SQL query.
      * By default, it selects all columns ('*').
      */
     private array $columns = ['*'];
     /**
-     * @var array $originalAttributes
+     * @var array
      *
      * This property holds the original attributes of the Eloquent model.
      * It is used to keep track of the initial state of the model's attributes
@@ -164,7 +164,7 @@ class EloquentSQL
      */
     public function only(array $columns): self
     {
-        if (!empty($columns)) {
+        if (! empty($columns)) {
             $this->columns = $columns;
         }
 
@@ -181,7 +181,7 @@ class EloquentSQL
      */
     public function except(array $excluded): self
     {
-        if (!empty($excluded)) {
+        if (! empty($excluded)) {
             $original = array_keys($this->originalAttributes);
             $diff = array_diff($original, $excluded);
             $this->columns = array_values($diff);
