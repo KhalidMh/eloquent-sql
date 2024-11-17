@@ -13,7 +13,9 @@ use KhalidMh\EloquentSQL\Tests\TestCase;
 |
 */
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+// pest()->extend(TestCase::class)->in('Feature', 'Unit');
+uses(TestCase::class)->in('Feature', 'Unit');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
