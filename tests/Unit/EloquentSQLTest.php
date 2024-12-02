@@ -16,7 +16,7 @@ beforeEach(function () {
     ]);
 
     // Retrieve the first user from the database
-    $this->user = User::first();
+    $this->user = User::firstOrFail();
 });
 
 it('generates an SQL insert query string for the model', function () {

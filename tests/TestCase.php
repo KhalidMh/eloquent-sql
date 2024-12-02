@@ -2,7 +2,6 @@
 
 namespace KhalidMh\EloquentSQL\Tests;
 
-// use PHPUnit\Framework\TestCase as BaseTestCase;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 abstract class TestCase extends OrchestraTestCase
@@ -13,6 +12,9 @@ abstract class TestCase extends OrchestraTestCase
 
         // load the package migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        // run the migrations
+        $this->artisan('migrate');
     }
 
     protected function getPackageProviders($app)

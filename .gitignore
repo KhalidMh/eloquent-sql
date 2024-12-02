@@ -33,3 +33,9 @@ testbench.yaml
 
 # CS Fixer
 /.php-cs-fixer.cache
+
+# Docker
+docker
+.dockerignore
+docker-compose.yml
+dockerfile
