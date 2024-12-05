@@ -2,7 +2,7 @@
 
 namespace KhalidMh\EloquentSql;
 
-use Carbon\Carbon;
+use DateTime;
 use Illuminate\Database\Eloquent\Model;
 
 class EloquentSQL
@@ -10,7 +10,7 @@ class EloquentSQL
     /**
      * @var string The name of the database table associated with the Eloquent model.
      */
-    private readonly string $table;
+    private $table;
 
     /**
      * @var array
@@ -18,7 +18,7 @@ class EloquentSQL
      * This property holds the columns to be selected in the SQL query.
      * By default, it selects all columns ('*').
      */
-    private array $columns = ['*'];
+    private $columns = ['*'];
     /**
      * @var array
      *
@@ -26,7 +26,7 @@ class EloquentSQL
      * It is used to keep track of the initial state of the model's attributes
      * before any changes are made.
      */
-    private readonly array $originalAttributes;
+    private $original;
 
     /**
      * Set the model instance and initialize the EloquentSQL instance with the model's attributes and table.
@@ -37,7 +37,8 @@ class EloquentSQL
     public static function setModel(Model $model): self
     {
         $instance = new self();
-        $instance->originalAttributes = $model->getAttributes();
+
+        $instance->original = $model->getOriginal();
         $instance->table = $model->getTable();
 
         return $instance;
@@ -54,9 +55,9 @@ class EloquentSQL
     public function toQuery(): string
     {
         return $this->buildQuery(
-            table: $this->table,
-            names: $this->getAttributesNames(),
-            values: $this->getAttributesValues()
+            $this->table,
+            $this->getAttributesNames(),
+            $this->getAttributesValues()
         );
     }
 
@@ -68,7 +69,7 @@ class EloquentSQL
     private function getAttributesNames(): array
     {
         if ($this->columns[0] === '*') {
-            return array_keys($this->originalAttributes);
+            return array_keys($this->original);
         }
 
         return $this->columns;
@@ -82,9 +83,9 @@ class EloquentSQL
     private function getAttributesValues(): array
     {
         $filtred_values = array_filter(
-            callback : fn ($value, $name) => in_array($name, $this->getAttributesNames()),
-            array : $this->originalAttributes,
-            mode: ARRAY_FILTER_USE_BOTH
+            $this->original,
+            function ($value, $name) { return in_array($name, $this->getAttributesNames()); },
+            ARRAY_FILTER_USE_BOTH
         );
 
         return array_values($filtred_values);
@@ -146,8 +147,8 @@ class EloquentSQL
                 return '"' . addslashes($value) . '"';
             }
 
-            if ($value instanceof Carbon) {
-                return $value->format('Y-m-d H:i:s');
+            if ($value instanceof DateTime) {
+                return $value->toDateTimeString();
             }
 
             return $value;
@@ -182,7 +183,7 @@ class EloquentSQL
     public function except(array $excluded): self
     {
         if (! empty($excluded)) {
-            $original = array_keys($this->originalAttributes);
+            $original = array_keys($this->original);
             $diff = array_diff($original, $excluded);
             $this->columns = array_values($diff);
         }

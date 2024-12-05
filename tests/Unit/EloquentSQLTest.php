@@ -27,10 +27,10 @@ it('generates an SQL insert query string for the model', function () {
     $sql = $eloquentSQL->toQuery();
 
     // Expected SQL query
-    $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", NULL, "' . $this->user->created_at->format('Y-m-d H:i:s') . '", "' . $this->user->updated_at->format('Y-m-d H:i:s') . '");';
+    $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", NULL, ' . $this->user->created_at->toDateTimeString() . ', ' . $this->user->updated_at->toDateTimeString() . ');';
 
     // Assert that the generated SQL query matches the expected SQL query
-    expect($sql)->toBe($expectedSql);
+    expect($sql)->toBeString()->toBe($expectedSql);
 });
 
 it('excludes specified columns from the query', function () {
@@ -44,10 +44,10 @@ it('excludes specified columns from the query', function () {
     $sql = $eloquentSQL->toQuery();
 
     // Expected SQL query
-    $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", "' . $this->user->updated_at->format('Y-m-d H:i:s') . '");';
+    $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", ' . $this->user->updated_at->toDateTimeString() . ');';
 
     // Assert that the generated SQL query matches the expected SQL query
-    expect($sql)->toBe($expectedSql);
+    expect($sql)->toBeString()->toBe($expectedSql);
 });
 
 it('includes only specified columns in the query', function () {
@@ -64,5 +64,5 @@ it('includes only specified columns in the query', function () {
     $expectedSql = 'INSERT INTO `users` (`name`, `email`) VALUES ("John Doe", "john@example.com");';
 
     // Assert that the generated SQL query matches the expected SQL query
-    expect($sql)->toBe($expectedSql);
+    expect($sql)->toBeString()->toBe($expectedSql);
 });

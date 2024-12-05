@@ -13,11 +13,7 @@ use KhalidMh\EloquentSQL\Tests\TestCase;
 |
 */
 
-if (version_compare(PHP_VERSION, '8.2', '>=')) {
-    pest()->extend(TestCase::class)->in('Feature', 'Unit');
-} else {
-    uses(TestCase::class)->in('Feature', 'Unit');
-}
+uses(TestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
