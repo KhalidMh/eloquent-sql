@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class EloquentSQL
 {
     /**
-     * @var string The name of the database table associated with the Eloquent model.
+     * @var string The name of the database table associated with the model.
      */
     private $table;
 
@@ -16,15 +16,13 @@ class EloquentSQL
      * @var array
      *
      * This property holds the columns to be selected in the SQL query.
-     * By default, it selects all columns ('*').
      */
     private $columns = ['*'];
+
     /**
      * @var array
      *
-     * This property holds the original attributes of the Eloquent model.
-     * It is used to keep track of the initial state of the model's attributes
-     * before any changes are made.
+     * The original attributes of the Eloquent model.
      */
     private $original;
 
@@ -34,21 +32,21 @@ class EloquentSQL
      * @param Model $model The Eloquent model instance to set.
      * @return self Returns an instance of the EloquentSQL class.
      */
-    public static function setModel(Model $model): self
+    public static function set(Model $model): self
     {
         $instance = new self();
 
-        $instance->original = $model->getOriginal();
+        $instance->original = $model->withoutRelations()->getOriginal();
         $instance->table = $model->getTable();
 
         return $instance;
     }
 
     /**
-     * Converts the current state of the object to a SQL query string.
+     * Converts the current state of the object to a SQL insert query string.
      *
-     * This method builds a SQL query string using the table name, attribute names,
-     * and attribute values of the current object.
+     * This method builds a SQL query string using the table name,
+     * attribute names, and attribute values of the current object.
      *
      * @return string The generated SQL query string.
      */
@@ -78,13 +76,15 @@ class EloquentSQL
     /**
      * Retrieve the values of the model's attributes.
      *
-     * @return array An array of column values.
+     * @return array The values of attributes.
      */
     private function getAttributesValues(): array
     {
         $filtred_values = array_filter(
             $this->original,
-            function ($value, $name) { return in_array($name, $this->getAttributesNames()); },
+            function ($value, $name) {
+                return in_array($name, $this->getAttributesNames());
+            },
             ARRAY_FILTER_USE_BOTH
         );
 
@@ -97,9 +97,9 @@ class EloquentSQL
      * This method constructs an SQL query for inserting data into a specified table.
      * It formats the column names and values before embedding them into the query string.
      *
-     * @param string $table The name of the table into which data will be inserted.
-     * @param array $names An array of column names to be included in the query.
-     * @param array $values An array of values corresponding to the column names.
+     * @param string $table The name of the table.
+     * @param array $names An array of attributes names.
+     * @param array $values An array of attributes values.
      * @return string The constructed SQL INSERT query string.
      */
     private function buildQuery(string $table, array $names, array $values): string
@@ -124,17 +124,10 @@ class EloquentSQL
     }
 
     /**
-     * Format an array of values for SQL queries.
+     * Format an array of attributes values for SQL queries.
      *
-     * This method takes an array of values and formats them into a string
-     * suitable for SQL queries. It handles different types of values:
-     * - NULL values are converted to the string 'NULL'.
-     * - String values are escaped and enclosed in double quotes.
-     * - DateTime objects are formatted to 'Y-m-d H:i:s'.
-     * - Other values are returned as-is.
-     *
-     * @param array $values The array of values to format.
-     * @return string The formatted string of values.
+     * @param array $values The array of attributes values to format.
+     * @return string The formatted string of attributes values.
      */
     private function formatValues(array $values): string
     {

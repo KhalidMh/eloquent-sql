@@ -21,10 +21,7 @@ beforeEach(function () {
 
 it('generates an SQL insert query string for the model', function () {
     // Set the model for EloquentSQL
-    $eloquentSQL = EloquentSQL::setModel($this->user);
-
-    // Generate the SQL query
-    $sql = $eloquentSQL->toQuery();
+    $sql = EloquentSQL::set($this->user)->toQuery();
 
     // Expected SQL query
     $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", NULL, ' . $this->user->created_at->toDateTimeString() . ', ' . $this->user->updated_at->toDateTimeString() . ');';
@@ -35,13 +32,7 @@ it('generates an SQL insert query string for the model', function () {
 
 it('excludes specified columns from the query', function () {
     // Set the model for EloquentSQL
-    $eloquentSQL = EloquentSQL::setModel($this->user);
-
-    // Exclude the 'remember_token' and 'created_at' columns
-    $eloquentSQL->except(['remember_token', 'created_at']);
-
-    // Generate the SQL query
-    $sql = $eloquentSQL->toQuery();
+    $sql = EloquentSQL::set($this->user)->except(['remember_token', 'created_at'])->toQuery();
 
     // Expected SQL query
     $expectedSql = 'INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `updated_at`) VALUES (1, "John Doe", "john@example.com", NULL, "password", ' . $this->user->updated_at->toDateTimeString() . ');';
@@ -52,13 +43,7 @@ it('excludes specified columns from the query', function () {
 
 it('includes only specified columns in the query', function () {
     // Set the model for EloquentSQL
-    $eloquentSQL = EloquentSQL::setModel($this->user);
-
-    // Include only the 'name' and 'email' columns
-    $eloquentSQL->only(['name', 'email']);
-
-    // Generate the SQL query
-    $sql = $eloquentSQL->toQuery();
+    $sql = EloquentSQL::set($this->user)->only(['name', 'email'])->toQuery();
 
     // Expected SQL query
     $expectedSql = 'INSERT INTO `users` (`name`, `email`) VALUES ("John Doe", "john@example.com");';
