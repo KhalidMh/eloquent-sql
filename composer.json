@@ -17,6 +17,7 @@
             "email": "khalid.marhoum97@gmail.com"
         }
     ],
+    "version": "dev-main",
     "autoload": {
         "psr-4": {
             "KhalidMh\\EloquentSQL\\": "src/"
