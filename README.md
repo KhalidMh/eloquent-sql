@@ -6,69 +6,78 @@ EloquentSQL is a Laravel package that generates raw SQL insert queries from Eloq
 ## 🚀 Features
 
 - Converts Eloquent model data into raw SQL insert statements
-- Supports single or multiple records
+- Ability to exclude / include specific columns
 - Easy to use with any Laravel Eloquent model
 - Ideal for debugging, logging, or data migration
+
+## 📦 Requirements
+
+- PHP 7.3 or higher
+- Laravel 8.x or higher
 
 ## 🛠 Installation
 
 You can install the package via Composer:
 
 ```bash
-composer require your-vendor/EloquentSQL
+composer require khalidmh/eloquent-sql
 ```
 
 ## 📦 Usage
 
-### Generating Insert Query for a Single Model Record
+### Generating Insert Query for a Model
 
 ```PHP
 
-use YourVendor\EloquentSQL\Facades\EloquentSQL;
+use KhalidMh\EloquentSQL\EloquentSQL;
 use App\Models\User;
 
 $user = User::find(1);
-$sql = EloquentSQL::generate($user);
+$sql = EloquentSQL::set($user)->toQuery();
 
 echo $sql; 
 // Output: INSERT INTO `users` (`id`, `name`, `email`, ...) VALUES (1, 'John Doe', 'john@example.com', ...);
 ````
 
-### Generating Insert Query for Multiple Model Records
+### Excluding Columns
 
 ```PHP
-$users = User::where('status', 'active')->get();
-$sql = EloquentSQL::generate($users);
+
+use KhalidMh\EloquentSQL\EloquentSQL;
+use App\Models\User;
+
+$user = User::find(1);
+
+$sql = EloquentSQL::set($user)
+        ->exclude(['id', 'created_at', 'updated_at'])
+        ->toQuery();
 
 echo $sql;
-/*
-Output: 
-INSERT INTO `users` (`id`, `name`, `email`, ...) VALUES (1, 'John Doe', 'john@example.com', ...),
-                                           (2, 'Jane Doe', 'jane@example.com', ...);
-*/
+
+// Output: INSERT INTO `users` (`name`, `email`, ...) VALUES ('John Doe', 'john@example.com', ...);
+```
+
+### Including Columns
+
+```PHP
+
+use KhalidMh\EloquentSQL\EloquentSQL;
+use App\Models\User;
+
+$user = User::find(1);
+
+$sql = EloquentSQL::set($user)
+        ->include(['name', 'email'])
+        ->toQuery();
+
+echo $sql;
+
+// Output: INSERT INTO `users` (`name`, `email`) VALUES ('John Doe', 'johnjohn@example.com');
 ```
 
 ## ⚙️ Configuration
 
 No additional configuration is required. EloquentSQL works out-of-the-box with your existing Eloquent models.
-
-## 📚 Advanced Usage
-
-### Customizing Columns
-
-If you need to generate an insert query with specific columns, you can pass an array of columns as a second parameter:
-
-```PHP
-$sql = EloquentSQL::generate($user, ['id', 'name', 'email']);
-```
-
-### Ignoring Timestamps
-
-By default, `created_at` and `updated_at` timestamps will be included if they exist in your model. You can ignore these columns by passing a third parameter:
-
-```PHP
-$sql = EloquentSQL::generate($user, ['id', 'name', 'email'], true);
-```
 
 ## 📃 License
 
@@ -77,7 +86,3 @@ EloquentSQL is open-source software licensed under the [MIT license](LICENSE).
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue.
-
-## 🙏 Acknowledgements
-
-Inspired by the need to streamline database operations and simplify data migration tasks in Laravel.
