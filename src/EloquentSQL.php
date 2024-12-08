@@ -1,6 +1,6 @@
 <?php
 
-namespace KhalidMh\EloquentSql;
+namespace KhalidMh\EloquentSQL;
 
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
