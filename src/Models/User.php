@@ -14,4 +14,6 @@ class User extends Model
     {
         return UserFactory::new();
     }
+
+    protected $hidden = ['password', 'remember_token'];
 }

@@ -2,7 +2,7 @@
 
 namespace KhalidMh\EloquentSQL;
 
-use DateTime;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class EloquentSQL
@@ -22,9 +22,23 @@ class EloquentSQL
     /**
      * @var array
      *
+     * This property indicates whether hidden columns should be included in the query.
+     */
+    private $includeHidden = false;
+
+    /**
+     * @var array
+     *
      * The original attributes of the Eloquent model.
      */
     private $original;
+
+    /**
+     * @var array
+     *
+     * The hidden attributes of the Eloquent model.
+     */
+    private $hidden;
 
     /**
      * Set the model instance and initialize the EloquentSQL instance with the model's attributes and table.
@@ -37,6 +51,7 @@ class EloquentSQL
         $instance = new self();
 
         $instance->original = $model->withoutRelations()->getOriginal();
+        $instance->hidden = $model->getHidden();
         $instance->table = $model->getTable();
 
         return $instance;
@@ -67,7 +82,11 @@ class EloquentSQL
     private function getAttributesNames(): array
     {
         if ($this->columns[0] === '*') {
-            return array_keys($this->original);
+            $this->columns = array_keys($this->original);
+        }
+
+        if (! $this->includeHidden) {
+            $this->columns = array_diff($this->columns, $this->hidden);
         }
 
         return $this->columns;
@@ -140,8 +159,8 @@ class EloquentSQL
                 return '"' . addslashes($value) . '"';
             }
 
-            if ($value instanceof DateTime) {
-                return $value->toDateTimeString();
+            if ($value instanceof Carbon) {
+                return '"' . $value->toDateTimeString() .'"';
             }
 
             return $value;
@@ -180,6 +199,13 @@ class EloquentSQL
             $diff = array_diff($original, $excluded);
             $this->columns = array_values($diff);
         }
+
+        return $this;
+    }
+
+    public function includeHidden(): self
+    {
+        $this->includeHidden = true;
 
         return $this;
     }
