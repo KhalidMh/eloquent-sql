@@ -13,8 +13,6 @@ class EloquentSQLServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        if (version_compare(app()->version(), '11.0.0', '<')) {
-            ServiceProvider::addProviderToBootstrapFile(EloquentSQLServiceProvider::class);
-        }
+        // Bootstrap any application services.
     }
 }
