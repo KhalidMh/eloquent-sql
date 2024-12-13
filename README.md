@@ -35,11 +35,12 @@ use App\Models\User;
 $user = User::find(1);
 $sql = EloquentSQL::set($user)->toQuery();
 
-echo $sql; 
 // Output: INSERT INTO `users` (`id`, `name`, `email`, ...) VALUES (1, 'John Doe', 'john@example.com', ...);
 ````
 
 ### Excluding Columns
+
+### Specify which columns to be excluded from the insert query
 
 ```PHP
 
@@ -49,16 +50,17 @@ use App\Models\User;
 $user = User::find(1);
 
 $sql = EloquentSQL::set($user)
-        ->exclude(['id', 'created_at', 'updated_at'])
+        ->except(['id', 'created_at', 'updated_at'])
         ->toQuery();
 
-echo $sql;
 
 // Output: INSERT INTO `users` (`name`, `email`, ...) VALUES ('John Doe', 'john@example.com', ...);
 ```
 
 ### Including Columns
 
+### Specify which columns to be in the insert query
+
 ```PHP
 
 use KhalidMh\EloquentSQL\EloquentSQL;
@@ -67,12 +69,30 @@ use App\Models\User;
 $user = User::find(1);
 
 $sql = EloquentSQL::set($user)
-        ->include(['name', 'email'])
+        ->only(['name', 'email'])
         ->toQuery();
 
-echo $sql;
 
 // Output: INSERT INTO `users` (`name`, `email`) VALUES ('John Doe', 'johnjohn@example.com');
+```
+
+### Including hidden model attributes
+
+### By default Laravel removes hidden attributes from the Model based on the $hidden property, you can use the includeHidden() to add them to the insert query without updating the Model's $hidden property globaly.
+
+```PHP
+
+use KhalidMh\EloquentSQL\EloquentSQL;
+use App\Models\User;
+
+$user = User::find(1);
+
+$sql = EloquentSQL::set($user)
+        ->includeHidden()
+        ->only(['password', 'remember_token'])
+        ->toQuery();
+
+// Output: INSERT INTO `users` (`password`, `remember_token`) VALUES ('password', '8zfuGf0f....');
 ```
 
 ## ⚙️ Configuration
